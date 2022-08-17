@@ -9,49 +9,19 @@
  */
 
 // TODO
-const tasks = [
-    {
-        id: 1,
-        title: "JavaScript",
-        description: "JavaScript is Awesome",
-        priority: "low",
-        isDone: false,
-        isArchieved: false,
-        expieredAt: 1659545990506,
+import { tasks } from "./todos"
+import UiElements from "./elements"
+import Toastify from "toastify-js"
+import { debounce } from 'lodash'
+const {
+    tasksContainer,
+    addTaskFormEl,
+    inputTitleEl,
+    textareaDescriptionEl,
+    selectPriorityEl,
+    searchInputEl
+} = UiElements
 
-    },
-    {
-        id: 2,
-        title: "Python",
-        description: "Python is good",
-        priority: "medium",
-        isDone: true,
-        isArchieved: false,
-        expieredAt: 1659474000000,
-    },
-    {
-        id: 3,
-        title: "GO",
-        description: "Go is nice",
-        priority: "medium",
-        isDone: false,
-        isArchieved: false,
-        expieredAt: 1659474000000,
-    },
-    {
-        id: 4,
-        title: "Primary card title",
-        description: "Some quick example text to build on the card title and make up the bulk of the card's content.",
-        priority: "high",
-        isDone: true,
-        isArchieved: false,
-        expieredAt: 1659474000000,
-    }
-]
-
-const tasksContainer = document.querySelector('.tasks-list')
-
-const removeBtns = document.querySelectorAll('[data-action="remove"]')
 
 function createTaskTemplate(task, index) {
     const priorityClass = task.priority === 'low' ? 'text-bg-info' : task.priority === 'medium' ? 'text-bg-warning' : 'text-bg-danger'
@@ -99,6 +69,11 @@ function removeTaskHandler(e) {
     taskEl.remove()
     const index = tasks.findIndex((task) => task.id === id)
     tasks.splice(index, 1)
+    Toastify({
+        text: 'Task has been removed success',
+        duration: 5000,
+        close: true
+    }).showToast()
 }
 
 
@@ -126,16 +101,9 @@ tasksContainer.addEventListener('click', (e) => {
     console.log(e.target)
 })
 
-const addTaskFormEl = document.forms['add-task']
-
-const inputTitleEl = addTaskFormEl.elements['task-title']
-const textareaDescriptionEl = addTaskFormEl.elements['task-description']
-const selectPriorityEl = addTaskFormEl.elements['task-priority']
-
 
 addTaskFormEl.addEventListener('submit', (e) => {
     e.preventDefault()
-    console.log(selectPriorityEl)
     const newTask = {
         id: tasks.length + 1,
         title: inputTitleEl.value,
@@ -148,12 +116,14 @@ addTaskFormEl.addEventListener('submit', (e) => {
     
     const taskTemplate = createTaskTemplate(newTask, tasks.length - 1)
     tasksContainer.insertAdjacentHTML('beforeend', taskTemplate)
-
+    Toastify({
+        text: 'Task has been added success',
+        duration: 5000,
+        close: true
+    }).showToast()
     addTaskFormEl.reset()
 })
 
-const searchFormEl = document.forms['search-form']
-const searchInputEl = searchFormEl.elements['task-search']
 
 function clearTasksMarkup() {
     tasksContainer.innerHTML = ''
