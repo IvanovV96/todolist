@@ -9,10 +9,12 @@
  */
 
 // TODO
-import { tasks } from "./todos"
+import { getTasks, addNewTask, removeTask } from "./tasksService"
+import { debounce } from 'lodash'
+import { TaskPriorityTypes, TaskActionTypes } from "./constants";
 import UiElements from "./elements"
 import Toastify from "toastify-js"
-import { debounce } from 'lodash'
+
 const {
     tasksContainer,
     addTaskFormEl,
@@ -22,9 +24,13 @@ const {
     searchInputEl
 } = UiElements
 
+const tasks = getTasks()
 
 function createTaskTemplate(task, index) {
-    const priorityClass = task.priority === 'low' ? 'text-bg-info' : task.priority === 'medium' ? 'text-bg-warning' : 'text-bg-danger'
+    
+    const priorityClass = task.priority === TaskPriorityTypes.Low 
+        ? 'text-bg-info' : task.priority === TaskPriorityTypes.Medium 
+        ? 'text-bg-warning' : 'text-bg-danger'
     let borderClass
     let textBgClass
 
@@ -39,6 +45,7 @@ function createTaskTemplate(task, index) {
         month: '2-digit',
         day: '2-digit',
     })}`
+    
     const template = `
         <div class="card mb-3 ${borderClass}" data-task-id = "${task.id}">
             <div class="card-header d-flex justify-content-between ${textBgClass}">
@@ -67,8 +74,9 @@ function removeTaskHandler(e) {
     const taskEl = target.closest('[data-task-id]')
     const id = Number(taskEl.dataset.taskId)
     taskEl.remove()
-    const index = tasks.findIndex((task) => task.id === id)
-    tasks.splice(index, 1)
+    
+    removeTask(id)
+
     Toastify({
         text: 'Task has been removed success',
         duration: 5000,
@@ -88,13 +96,13 @@ tasksContainer.addEventListener('click', (e) => {
     const action = e.target.dataset.action
     if(!action) return 
     switch(action) {
-        case 'remove':
+        case TaskActionTypes.Remove:
             removeTaskHandler(e)
             break
-        case 'done':
+        case TaskActionTypes.Done:
             console.log('func done')
             break
-        case 'reopen':
+        case TaskActionTypes.Reopen:
             console.log('func reopen')
             break
     }
@@ -104,16 +112,11 @@ tasksContainer.addEventListener('click', (e) => {
 
 addTaskFormEl.addEventListener('submit', (e) => {
     e.preventDefault()
-    const newTask = {
-        id: tasks.length + 1,
+    const newTask = addNewTask({
         title: inputTitleEl.value,
         description: textareaDescriptionEl.value,
-        priority: selectPriorityEl.value,
-        isDone: false,
-        expiredAt: Date.now() + (1000 * 60 * 60 * 24)
-    }
-    tasks.push(newTask)
-    
+        priority: selectPriorityEl.value
+    })
     const taskTemplate = createTaskTemplate(newTask, tasks.length - 1)
     tasksContainer.insertAdjacentHTML('beforeend', taskTemplate)
     Toastify({
